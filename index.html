@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gerador de Assets PDP — DEWALT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght,wdth@0,900,125&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F2ED; --surface:#FFFFFF; --surface-2:#FBFAF7; --text:#201F1C; --text-dim:#6B685F; --border:#E3DFD4;
+  --accent:#8C5A16; --accent-soft:#F1E4CE;
+  --ok:#2E6B40; --ok-soft:#E4F0E3; --warn:#8A5A0F; --warn-soft:#F5E9D2; --crit:#9A2E1F; --crit-soft:#F7E0DA;
+  --dw-yellow:#FEBD17; --dw-black:#231E20;
+  --radius:14px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#17181A; --surface:#1E2023; --surface-2:#232528; --text:#ECE8E0; --text-dim:#9E9A90; --border:#34363A;
+    --accent:#D9A54E; --accent-soft:#3A2E17;
+    --ok:#5FBE79; --ok-soft:#1E2E20; --warn:#E0A83E; --warn-soft:#332711; --crit:#E5695A; --crit-soft:#3A211C;
+  }
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Work Sans', system-ui, sans-serif;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1040px; margin:0 auto; padding:48px 28px 80px;}
+
+.hero-band{ background:var(--dw-black); color:#fff; border-bottom:6px solid var(--dw-yellow); }
+.hero-inner{ max-width:1040px; margin:0 auto; padding:40px 28px 34px; display:flex; flex-direction:column; gap:16px; }
+.eyebrow{
+  display:inline-flex; align-items:center; gap:8px; width:fit-content;
+  background:var(--dw-yellow); color:var(--dw-black); font-family:'Archivo', sans-serif; font-stretch:125%; font-weight:900;
+  font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:6px 12px; border-radius:2px;
+}
+.hero-inner h1{
+  font-family:'Archivo', sans-serif; font-stretch:125%; font-weight:900; text-transform:uppercase; letter-spacing:-0.01em;
+  line-height:.94; font-size:clamp(28px,4.2vw,44px); margin:0;
+}
+.hero-inner h1 .accent{ color:var(--dw-yellow); }
+.hero-inner .sub{ color:#C7C3BB; font-size:15.5px; max-width:66ch; }
+
+.section-label{ margin:48px 0 18px; display:flex; align-items:center; gap:12px; }
+.section-label:first-of-type{ margin-top:8px; }
+.section-label .tag{ width:9px; height:9px; background:var(--dw-yellow); flex:none; }
+.section-label h2{
+  font-family:'Archivo', sans-serif; font-stretch:125%; font-weight:900; font-size:14.5px; letter-spacing:.05em;
+  text-transform:uppercase; color:var(--text); margin:0;
+}
+.section-label .line{ flex:1; height:2px; background:var(--dw-yellow); opacity:.4; }
+.section-label .count{ font-size:12.5px; color:var(--text-dim); font-variant-numeric:tabular-nums; }
+
+.card{
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:26px; box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+
+.field{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+.field label{ font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--text-dim); font-weight:700; }
+.field .hint{ font-size:12px; color:var(--text-dim); }
+.field input[type="text"], .field textarea{
+  width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px;
+  background:var(--surface-2); color:var(--text); font-family:inherit; font-size:14px;
+}
+.field textarea{ resize:vertical; min-height:70px; }
+.field input:focus-visible, .field textarea:focus-visible{ outline:2px solid var(--dw-yellow); outline-offset:1px; }
+
+.sites-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+@media (max-width:560px){ .sites-grid{grid-template-columns:1fr;} }
+
+.btn{
+  display:inline-flex; align-items:center; gap:8px; font-family:inherit; font-size:13.5px; font-weight:800;
+  text-transform:uppercase; letter-spacing:.03em; padding:12px 20px; border-radius:9px; border:none;
+  cursor:pointer; background:var(--dw-yellow); color:var(--dw-black);
+}
+.btn:hover{ background:#FFCB3D; }
+.btn:disabled{ opacity:.55; cursor:not-allowed; }
+.btn:focus-visible{ outline:2px solid var(--dw-yellow); outline-offset:2px; }
+
+.form-status{ margin-top:14px; font-size:13px; }
+.form-status.ok{ color:var(--ok); }
+.form-status.err{ color:var(--crit); }
+
+.pages-list{ display:flex; flex-direction:column; gap:14px; }
+.page-row{
+  background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px;
+  display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap;
+}
+.page-row .p-main{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+.page-row .p-sku{
+  display:inline-flex; width:fit-content; font-family:'Archivo', sans-serif; font-stretch:125%; font-weight:900; font-size:11.5px;
+  letter-spacing:.05em; color:var(--dw-black); background:var(--dw-yellow); padding:3px 8px; border-radius:2px;
+}
+.page-row .p-name{ font-size:16px; font-weight:700; }
+.page-row .p-desc{ font-size:13px; color:var(--text-dim); max-width:64ch; }
+.page-row .p-date{ font-size:11.5px; color:var(--text-dim); font-variant-numeric:tabular-nums; }
+.page-row .p-link{
+  flex:none; display:inline-flex; align-items:center; gap:6px; font-weight:800; font-size:13px;
+  text-transform:uppercase; letter-spacing:.03em; color:var(--dw-black); background:var(--dw-yellow);
+  padding:10px 16px; border-radius:8px; text-decoration:none;
+}
+.page-row .p-link:hover{ background:#FFCB3D; }
+
+.status-pill{
+  display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.05em; padding:4px 9px; border-radius:999px; flex:none;
+}
+.status-pill.pending{ color:var(--warn); background:var(--warn-soft); }
+.status-pill.processing{ color:var(--accent); background:var(--accent-soft); }
+.status-pill.done{ color:var(--ok); background:var(--ok-soft); }
+.status-pill.error{ color:var(--crit); background:var(--crit-soft); }
+.status-pill::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+.empty-state, .loading-state{ color:var(--text-dim); font-size:13.5px; padding:20px 4px; }
+
+.foot-band{ background:var(--dw-black); border-top:6px solid var(--dw-yellow); margin-top:64px; color:#C7C3BB; font-size:13.5px; }
+.foot-inner{ max-width:1040px; margin:0 auto; padding:34px 28px 44px; }
+.foot-inner h4{ color:var(--dw-yellow); font-family:'Archivo', sans-serif; font-stretch:125%; font-weight:900; font-size:12.5px; text-transform:uppercase; letter-spacing:.07em; margin:0 0 10px; }
+.foot-inner ol{ margin:0; padding-left:18px; }
+.foot-inner li{ margin-bottom:6px; }
+</style>
+</head>
+<body>
+
+<div class="hero-band">
+  <div class="hero-inner">
+    <div class="eyebrow">DEWALT · Template PDP</div>
+    <h1>GERADOR DE <span class="accent">ASSETS PDP</span></h1>
+    <div class="sub">Preencha o SKU, até 4 sites de referência e uma mensagem principal (se quiser enfatizar algo). O pedido é gravado automaticamente — uma rotina agendada confere a fila a cada hora, pesquisa o produto e publica a página de assets aqui mesmo.</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="section-label"><h2>Novo pedido</h2><div class="line"></div></div>
+  <div class="card">
+    <form id="request-form">
+      <div class="field">
+        <label for="sku">SKU a ser gerado</label>
+        <input type="text" id="sku" placeholder="ex.: DWST60436" required />
+      </div>
+      <div class="sites-grid">
+        <div class="field">
+          <label for="site1">Site de referência 1</label>
+          <input type="text" id="site1" placeholder="ex.: www.dewalt.com.br" />
+        </div>
+        <div class="field">
+          <label for="site2">Site de referência 2 (opcional)</label>
+          <input type="text" id="site2" placeholder="ex.: www.dewalt.com" />
+        </div>
+        <div class="field">
+          <label for="site3">Site de referência 3 (opcional)</label>
+          <input type="text" id="site3" placeholder="ex.: www.mercadolivre.com.br" />
+        </div>
+        <div class="field">
+          <label for="site4">Site de referência 4 (opcional)</label>
+          <input type="text" id="site4" placeholder="ex.: www.amazon.com" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="mensagem">Mensagem principal (opcional)</label>
+        <textarea id="mensagem" placeholder="Alguma mensagem/diferencial que você quer enfatizar nesta página?"></textarea>
+        <div class="hint">Deixe em branco pra usar julgamento padrão com base nas especificações oficiais.</div>
+      </div>
+      <button class="btn" type="submit" id="submit-btn"><span>&#8681;</span> Gerar pedido</button>
+      <div class="form-status" id="form-status"></div>
+    </form>
+  </div>
+
+  <div class="section-label"><h2>Páginas geradas</h2><div class="line"></div><div class="count" id="pages-count"></div></div>
+  <div class="pages-list" id="pages-list">
+    <div class="loading-state">Carregando...</div>
+  </div>
+</div>
+
+<div class="foot-band">
+  <div class="foot-inner">
+    <h4>Como funciona</h4>
+    <ol>
+      <li>Preencha o formulário acima e clique em "Gerar pedido" — o pedido é gravado direto no banco de dados.</li>
+      <li>Uma rotina agendada confere a fila de pedidos pendentes a cada hora.</li>
+      <li>Quando processado, o status muda pra "concluído" e o link da página aparece na lista acima automaticamente.</li>
+    </ol>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+  const SUPABASE_URL = 'https://cyxhcnrfabtxusbzaokj.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5eGhjbnJmYWJ0eHVzYnphb2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4Mjk5MDgsImV4cCI6MjEwMDQwNTkwOH0.DFli12gONPoxJXLPB3M0q2cVHDAKTe3MmN4mZfKZGi0';
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const form = document.getElementById('request-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const formStatus = document.getElementById('form-status');
+  const pagesList = document.getElementById('pages-list');
+  const pagesCount = document.getElementById('pages-count');
+
+  function statusLabel(status){
+    return { pending: 'Na fila', processing: 'Gerando...', done: 'Concluído', error: 'Erro' }[status] || status;
+  }
+
+  function renderPages(rows){
+    pagesCount.textContent = rows.length;
+    if (!rows.length) {
+      pagesList.innerHTML = '<div class="empty-state">Nenhum pedido ainda. Preencha o formulário acima pra começar.</div>';
+      return;
+    }
+    pagesList.innerHTML = rows.map(function(r){
+      var name = r.product_name || r.sku;
+      var date = new Date(r.created_at).toLocaleDateString('pt-BR');
+      var link = r.status === 'done' && r.result_url
+        ? '<a class="p-link" href="' + r.result_url + '" target="_blank" rel="noopener noreferrer">Abrir página &rarr;</a>'
+        : '<span class="status-pill ' + r.status + '">' + statusLabel(r.status) + '</span>';
+      var desc = r.status === 'error' && r.error_message
+        ? ('Erro: ' + r.error_message)
+        : (r.mensagem || 'Sem mensagem principal especificada.');
+      return '<div class="page-row">' +
+        '<div class="p-main">' +
+          '<span class="p-sku">' + r.sku + '</span>' +
+          '<div class="p-name">' + name + '</div>' +
+          '<div class="p-desc">' + desc + '</div>' +
+          '<div class="p-date">Pedido em ' + date + '</div>' +
+        '</div>' +
+        link +
+      '</div>';
+    }).join('');
+  }
+
+  async function loadPages(){
+    const { data, error } = await supabase
+      .from('requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      pagesList.innerHTML = '<div class="empty-state">Não foi possível carregar a lista: ' + error.message + '</div>';
+      return;
+    }
+    renderPages(data);
+  }
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    var sku = document.getElementById('sku').value.trim();
+    if (!sku) return;
+    var sites = ['site1','site2','site3','site4']
+      .map(function(id){ return document.getElementById(id).value.trim(); })
+      .filter(Boolean);
+    var mensagem = document.getElementById('mensagem').value.trim();
+
+    submitBtn.disabled = true;
+    formStatus.textContent = 'Enviando...';
+    formStatus.className = 'form-status';
+
+    const { error } = await supabase.from('requests').insert({
+      sku: sku,
+      sites: sites,
+      mensagem: mensagem || null,
+    });
+
+    submitBtn.disabled = false;
+    if (error) {
+      formStatus.textContent = 'Erro ao enviar: ' + error.message;
+      formStatus.className = 'form-status err';
+      return;
+    }
+    formStatus.textContent = 'Pedido enviado! Ele entra na fila e é processado na próxima rodada da rotina (de hora em hora).';
+    formStatus.className = 'form-status ok';
+    form.reset();
+    loadPages();
+  });
+
+  loadPages();
+
+  // Live updates: refresh the list whenever a row changes, so status/links
+  // appear without the visitor needing to reload the page.
+  supabase
+    .channel('requests-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'requests' }, loadPages)
+    .subscribe();
+</script>
+
+</body>
+</html>
