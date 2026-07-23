@@ -1,0 +1,92 @@
+# Guia do gerador de assets PDP (para a rotina agendada)
+
+Você é a rotina agendada do gerador de assets PDP DEWALT. Este arquivo é o seu
+processo operacional completo -- leia inteiro antes de agir. Você começa cada
+execução sem memória da anterior, então tudo que precisa está aqui ou nos
+outros arquivos deste repositório.
+
+## O que você tem neste repositório
+
+- `generator/tile_kit.py` -- biblioteca Python com o sistema visual completo
+  (cores/fontes/CSS da marca DEWALT, funções de montagem de cada tipo de
+  asset, exportador via lightbox, etc). Importe e use as funções dela --
+  não recrie o CSS/HTML do zero.
+- `generator/pdp_asset_spec.json` -- a lista padrão de 10 assets principais +
+  4 páginas enriquecidas que toda página deve ter (nomes, formato, instrução
+  original da planilha-fonte). Use isso para saber o que gerar.
+- `pages/dwst60436.html` -- a primeira página gerada manualmente. É a
+  referência de qualidade/estilo -- abra e leia se tiver dúvida de como um
+  asset deveria ficar.
+
+## Credenciais (Supabase)
+
+- URL: `https://cyxhcnrfabtxusbzaokj.supabase.co`
+- Tabela: `requests` (colunas: id, sku, sites, mensagem, status, result_url,
+  product_name, error_message, created_at, updated_at)
+- Para LER pedidos pendentes, use a service_role key (fornecida no prompt da
+  rotina, nunca commitada neste repositório) via REST:
+  `GET /rest/v1/requests?status=eq.pending&order=created_at.asc`
+  Header: `apikey: <service_role>` e `Authorization: Bearer <service_role>`
+- Para ATUALIZAR o status (marcar processing/done/error), use PATCH no mesmo
+  endpoint com `?id=eq.<uuid>`, mesma autenticação (service_role -- a anon key
+  não tem permissão de update, de propósito).
+
+## Processo, por pedido pendente
+
+1. **Marque como `processing`** assim que começar (evita reprocessar se a
+   rotina falhar no meio e rodar de novo antes de terminar).
+
+2. **Pesquise o SKU.** Use WebSearch/WebFetch nos sites informados no pedido
+   (campo `sites`). Priorize a página oficial do fabricante para
+   especificações técnicas verificadas. Baixe as fotos oficiais reais do
+   produto (hero shot, ângulos, aplicação/lifestyle se existirem) via
+   `curl` -- nunca use fotos de terceiros sem necessidade, e nunca invente
+   uma imagem.
+
+3. **Redimensione as imagens** com `tile_kit.image_to_b64_jpeg(caminho)`
+   antes de montar os tiles (mantém a página em tamanho razoável).
+
+4. **Monte os 10 assets principais + 4 páginas enriquecidas** seguindo
+   `pdp_asset_spec.json`, usando as funções de `tile_kit.py`
+   (`tile`, `wide_tile`, `bar`, `headline`, `chip_list`, `badge_stack`,
+   `compare_table`, `spec_row`, `badge`, etc). Para cada asset:
+   - Escreva um briefing técnico e um de marketing **específicos** dessa
+     peça e desse SKU -- nunca um texto genérico que serviria pra qualquer
+     produto. Se não souber o que dizer de específico, é sinal de que não
+     pesquisou o suficiente ainda.
+   - **Nunca invente dado de concorrente** (asset 06) nem número/certificação
+     que não conseguiu confirmar na fonte oficial. Quando faltar, use
+     `pending_ribbon(...)` e deixe claro no `flag` do `spec_row` o que falta.
+   - Para o asset 04 (Família), procure o gráfico oficial da linha no site da
+     marca -- não crie um logo do zero. Se não achar nenhum, pule esse asset
+     ou substitua por um texto simples, e sinalize isso no `flag`.
+
+5. **Gere a página final** com `tile_kit.render_page(sku, product_name,
+   meta_chips, rows_html, ep_rows_html, source_note)` e salve em
+   `pages/<sku em minusculo>.html` (mesma pasta de `dwst60436.html`).
+
+6. **Commit e push:**
+   ```
+   git add pages/<sku>.html
+   git commit -m "Add generated PDP assets for <SKU>"
+   git push origin main
+   ```
+
+7. **Atualize o Supabase** (service_role key): `status=done`,
+   `result_url=/pages/<sku>.html`, `product_name=<nome real do produto>`.
+   Se algo impedir a geração (produto não encontrado em nenhum site
+   informado, por exemplo), marque `status=error` com uma
+   `error_message` clara e específica -- nunca deixe um pedido preso em
+   `processing` silenciosamente.
+
+8. Repita para cada pedido `pending` encontrado nesta execução.
+
+## Padrões de qualidade (não negociáveis)
+
+- Fotos sempre reais e oficiais -- nunca geradas/fabricadas.
+- Nenhum dado comparativo ou número técnico sem fonte verificável.
+- Copy (headlines/bullets) é sempre rascunho -- está tudo bem ser criativo,
+  mas mantenha o badge "Copy em revisão" em cada asset com texto autoral.
+- Sempre que assumir algo que não veio explícito no pedido ou na fonte
+  (formato, instrução, critério de comparação), diga isso no `flag` do
+  `spec_row` -- igual foi feito para os assets 09/10 do DWST60436.

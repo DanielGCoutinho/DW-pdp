@@ -1,0 +1,27 @@
+{
+  "_comment": "Extracted from the source spreadsheet 'Template PDP DeWalt' (SBD_Brand_Commerce_Playbook_Outputs.xlsx, sheet 'Template PDP'). This is the standard asset list every generated SKU page should cover. Format/instruction text is verbatim or lightly paraphrased from that sheet; assets 9-14 had no instruction/format filled in the source sheet (noted below) and were extrapolated in the first generation (DWST60436) -- keep doing that consistently, and flag the extrapolation in the row's `flag` field like DWST60436 did.",
+  "core_assets": [
+    {"n": 1, "name": "Hero Shot", "format": "2000x2000 - JPG", "instruction": "Imagem solo do produto em fundo branco, na melhor posicao possivel.", "notes": "No headline/bars/text -- marketplace hero-shot convention. single=True (base image IS the final asset)."},
+    {"n": 2, "name": "Conteudo da caixa ou do kit", "format": "2000x2000 - JPG", "instruction": "Detalhar os SKUs filhos em caso de kit, ou em caso de produto sem bateria informar.", "notes": "If the SKU is a kit/bundle of sub-parts, label each with its own SKU + short description. If it's a single non-kit product, show what's in the box instead (accessories, batteries or lack thereof, etc)."},
+    {"n": 3, "name": "Diferenciais tecnicos", "format": "2000x2000 - JPG", "instruction": "Infografico mostrando os detalhes e diferenciais tecnicos do SKU.", "notes": "4ish callouts (chip_list), the single most differentiating real mechanism/feature as the headline."},
+    {"n": 4, "name": "Familia", "format": "2000x2000 - JPG", "instruction": "Logo oficial da familia que o SKU faz parte.", "notes": "Use the official family/line lockup graphic verbatim if you can find one on the brand's own site -- do not fabricate a logo. single=True. If no official family graphic exists for this line, say so and skip or substitute with plain text lockup, flagged."},
+    {"n": 5, "name": "Diferencial tecnico", "format": "2000x2000 - JPG", "instruction": "Imagem aplicada ou comparativa com outro produto informando em destaque o principal valor entregue pelo item (valor entregue - o que entregamos).", "notes": "One single, evidence-backed value prop (e.g. a real certification/rating), shown with a real photo, not a studio still, when possible."},
+    {"n": 6, "name": "Comparativo tecnico", "format": "2000x2000 - JPG", "instruction": "Comparacao com competidores sem dizer o nome por cores de identificacao -- definir o quesito que vamos comparar.", "notes": "NEVER fabricate a competitor's number. Pick a defensible, verifiable quesito for the DEWALT side; leave the competitor value as a clearly marked pending placeholder (pending_ribbon + 'dado a confirmar') unless real competitor data was actually found and verified in this run."},
+    {"n": 7, "name": "Comparativo diferenciadores", "format": "2000x2000 - JPG", "instruction": "Comparativo com modelos similares DeWalt (mostra diferencas relevantes para o usuario).", "notes": "Internal-only comparison (this SKU vs. a close sibling/alternative in the same brand line) using only verifiable facts -- no external data dependency, should always ship 'ready' (no pending flag)."},
+    {"n": 8, "name": "Aplicacao", "format": "2000x2000 - JPG", "instruction": "Imagem focada em uma aplicacao ou linha de produto (ex.: aplicacao para obras, linha premium, uma profissao).", "notes": "Real lifestyle/application photo, not a studio still."},
+    {"n": 9, "name": "Linha de Produtos compativeis", "format": "2000x2000 - JPG (assumed -- not filled in source sheet)", "instruction": "Not specified in the source sheet -- infer from the product's own compatibility/retrocompatibility claims on its official spec page.", "notes": "No photo needed -- plain informational black-field asset is fine, matching DWST60436."},
+    {"n": 10, "name": "Aplicacao", "format": "Not specified in source sheet (use 2000x2000 for consistency)", "instruction": "Uso real da aplicacao com bullets tecnicos ou diferenciais.", "notes": "Second application shot, this one WITH bullet chips overlaid (unlike asset 8)."}
+  ],
+  "enriched_pages": [
+    {"n": 11, "name": "Pagina enriquecida 1", "notes": "Not specified in source sheet. DWST60436 pattern: reuse the Hero Shot photo + a 3-bullet recap of the top value props. Wide module, 2000x1047 (1200:628 ratio)."},
+    {"n": 12, "name": "Pagina enriquecida 2", "notes": "Reuse the Application photo (asset 8) + use-case bullets."},
+    {"n": 13, "name": "Pagina enriquecida 3", "notes": "Reuse the Diferenciais tecnicos photo (asset 3) + expanded technical bullets."},
+    {"n": 14, "name": "Pagina enriquecida 4", "notes": "Reuse the Familia asset (asset 4) + warranty/compatibility bullets."}
+  ],
+  "brand_system_rules": {
+    "colors": {"yellow": "#FEBD17", "black": "#231E20", "offwhite": "#FCF5DE"},
+    "fonts": {"headline": "Archivo Expanded Black (uppercase, two-tone: first line white, second/emphasis line yellow)", "body": "Work Sans"},
+    "layout": "Yellow bars top+bottom frame every tile; headline sits bottom-left or top-left inside the black/photo field between the bars; see tile_kit.py for exact component functions.",
+    "source": "DW_Global-Brand-Equity-ToolKit-EN-v2_DBG1.pdf (DEWALT global brand toolkit) -- already extracted into tile_kit.py's BASE_CSS, do not need to re-read the original PDF."
+  }
+}
