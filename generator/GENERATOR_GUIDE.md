@@ -31,6 +31,12 @@ outros arquivos deste repositório.
   endpoint com `?id=eq.<uuid>`, mesma autenticação (service_role -- a anon key
   não tem permissão de update, de propósito).
 
+## Antes de comecar
+
+Rode `pip install Pillow` (ou `pip install -q Pillow`) uma vez no inicio da
+execucao -- `tile_kit.image_to_b64_jpeg` depende dele para redimensionar as
+fotos baixadas, e o ambiente pode nao ter a biblioteca pre-instalada.
+
 ## Processo, por pedido pendente
 
 1. **Marque como `processing`** assim que começar (evita reprocessar se a
