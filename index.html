@@ -266,6 +266,17 @@ body{
     }).join('');
   }
 
+  var ACCESS_PASSWORD = 'DeWalt2026';
+  function checkPassword(actionLabel){
+    var input = prompt('Senha necessária para ' + actionLabel + ':');
+    if (input === null) return false; // cancelled
+    if (input !== ACCESS_PASSWORD) {
+      alert('Senha incorreta.');
+      return false;
+    }
+    return true;
+  }
+
   pagesList.addEventListener('click', async function(e){
     var btn = e.target.closest('.p-delete');
     if (!btn) return;
@@ -274,6 +285,7 @@ body{
     if (!confirm('Apagar o pedido/página do SKU ' + sku + '? Isso remove da lista e não pode ser desfeito. (O arquivo HTML gerado, se existir, continua no servidor até ser removido à parte.)')) {
       return;
     }
+    if (!checkPassword('apagar esta página')) return;
     btn.disabled = true;
     btn.textContent = 'Apagando...';
     const { error } = await supabase.from('requests').delete().eq('id', id);
@@ -302,6 +314,7 @@ body{
     e.preventDefault();
     var sku = document.getElementById('sku').value.trim();
     if (!sku) return;
+    if (!checkPassword('gerar um novo pedido')) return;
     var sites = ['site1','site2','site3','site4']
       .map(function(id){ return document.getElementById(id).value.trim(); })
       .filter(Boolean);

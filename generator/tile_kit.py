@@ -559,12 +559,21 @@ body{
 
 # The client-side script is identical across every generated page (base
 # image mirroring, SVG->canvas export via lightbox, notes persistence).
-# Notes are namespaced per-SKU in localStorage so multiple generated pages
-# viewed in the same browser don't collide.
+# Notes are stored server-side (Supabase table `asset_notes`, keyed by
+# page_sku + asset_id) -- NOT localStorage -- so a comment written by anyone,
+# on any device, is visible to everyone who opens this same page.
+SUPABASE_URL = "https://cyxhcnrfabtxusbzaokj.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5eGhjbnJmYWJ0eHVzYnphb2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4Mjk5MDgsImV4cCI6MjEwMDQwNTkwOH0.DFli12gONPoxJXLPB3M0q2cVHDAKTe3MmN4mZfKZGi0"
+
+
 def render_script(sku):
-    storage_prefix = f"{sku.lower()}-note-"
+    page_sku = sku.lower()
     return """
-<script>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const supabase = createClient('""" + SUPABASE_URL + """', '""" + SUPABASE_ANON_KEY + """');
+const PAGE_SKU = '""" + page_sku + """';
+
 (function(){
   var TILE_CSS = `""" + BASE_CSS.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${") + """`;
 
@@ -688,25 +697,28 @@ def render_script(sku):
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeLightbox(); });
   }
 
-  function initNotes(){
-    var STORAGE_PREFIX = '""" + storage_prefix + """';
+  async function initNotes(){
+    var notesById = {};
+    try {
+      var { data, error } = await supabase.from('asset_notes').select('asset_id, note').eq('page_sku', PAGE_SKU);
+      if (!error && data) data.forEach(function(r){ notesById[r.asset_id] = r.note; });
+    } catch (e) { /* fall through -- textareas just start empty */ }
+
     q('.notes-area[data-note-id]').forEach(function(area){
       var id = area.getAttribute('data-note-id');
       var statusEl = document.querySelector('[data-note-status="' + id + '"]');
-      try {
-        var saved = localStorage.getItem(STORAGE_PREFIX + id);
-        if (saved) area.value = saved;
-      } catch (e) {}
+      if (notesById[id]) area.value = notesById[id];
       var timer = null;
       area.addEventListener('input', function(){
         if (statusEl) statusEl.textContent = 'Salvando...';
         if (timer) clearTimeout(timer);
-        timer = setTimeout(function(){
+        timer = setTimeout(async function(){
           try {
-            localStorage.setItem(STORAGE_PREFIX + id, area.value);
-            if (statusEl) statusEl.textContent = area.value ? 'Salvo neste navegador.' : '';
+            var { error } = await supabase.from('asset_notes')
+              .upsert({ page_sku: PAGE_SKU, asset_id: id, note: area.value }, { onConflict: 'page_sku,asset_id' });
+            if (statusEl) statusEl.textContent = error ? 'Nao foi possivel salvar.' : (area.value ? 'Salvo -- visivel pra qualquer pessoa.' : '');
           } catch (e) { if (statusEl) statusEl.textContent = 'Nao foi possivel salvar.'; }
-        }, 400);
+        }, 500);
       });
     });
   }
