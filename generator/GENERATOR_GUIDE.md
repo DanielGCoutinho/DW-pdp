@@ -68,24 +68,41 @@ fotos baixadas, e o ambiente pode nao ter a biblioteca pre-instalada.
      ou substitua por um texto simples, e sinalize isso no `flag`.
 
 5. **Gere a página final** com `tile_kit.render_page(sku, product_name,
-   meta_chips, rows_html, ep_rows_html, source_note)` e salve em
-   `pages/<sku em minusculo>.html` (mesma pasta de `dwst60436.html`).
+   meta_chips, rows_html, ep_rows_html, source_note)`.
 
-6. **Commit e push:**
+6. **Suba o HTML pro Supabase Storage (NÃO use git push -- esta rotina só tem
+   acesso de leitura ao repositório GitHub, escrita falha com 403).** Salve o
+   arquivo localmente e faça upload via REST, com a service_role key:
    ```
-   git add pages/<sku>.html
-   git commit -m "Add generated PDP assets for <SKU>"
-   git push origin main
+   curl -X POST "https://cyxhcnrfabtxusbzaokj.supabase.co/storage/v1/object/pages/<sku em minusculo>.html" \
+     -H "apikey: <service_role>" \
+     -H "Authorization: Bearer <service_role>" \
+     -H "Content-Type: text/html" \
+     --data-binary "@<sku>.html"
    ```
+   Se o arquivo já existir de uma tentativa anterior, use PUT em vez de POST
+   nesse mesmo endpoint (upsert) em vez de tentar apagar primeiro.
+   A URL pública final (pra usar no `result_url` abaixo) é:
+   `https://cyxhcnrfabtxusbzaokj.supabase.co/storage/v1/object/public/pages/<sku em minusculo>.html`
 
-7. **Atualize o Supabase** (service_role key): `status=done`,
-   `result_url=/pages/<sku>.html`, `product_name=<nome real do produto>`.
-   Se algo impedir a geração (produto não encontrado em nenhum site
-   informado, por exemplo), marque `status=error` com uma
+7. **Atualize o Supabase** (service_role key, tabela `requests`): `status=done`,
+   `result_url=<URL pública do Storage acima>`, `product_name=<nome real do
+   produto>`. Se algo impedir a geração (produto não encontrado em nenhum
+   site informado, por exemplo), marque `status=error` com uma
    `error_message` clara e específica -- nunca deixe um pedido preso em
    `processing` silenciosamente.
 
 8. Repita para cada pedido `pending` encontrado nesta execução.
+
+## Por que Supabase Storage e não git push
+
+Esta rotina tem acesso de **leitura** ao repositório GitHub (pra clonar e ler
+`generator/` e `pages/dwst60436.html`), mas não tem acesso de **escrita** --
+um `git push` sempre falha com 403 nesse ambiente. Guardar a página gerada no
+Supabase Storage (bucket público `pages`, já criado) resolve isso porque usa
+a mesma service_role key que já funciona pra tudo mais neste processo -- sem
+depender de permissão de git. Não perca tempo tentando `git push` de novo;
+não é um erro passageiro, é como este ambiente está configurado.
 
 ## Padrões de qualidade (não negociáveis)
 
