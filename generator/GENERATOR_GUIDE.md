@@ -82,15 +82,24 @@ fotos baixadas, e o ambiente pode nao ter a biblioteca pre-instalada.
    ```
    Se o arquivo já existir de uma tentativa anterior, use PUT em vez de POST
    nesse mesmo endpoint (upsert) em vez de tentar apagar primeiro.
-   A URL pública final (pra usar no `result_url` abaixo) é:
-   `https://cyxhcnrfabtxusbzaokj.supabase.co/storage/v1/object/public/pages/<sku em minusculo>.html`
+
+   **IMPORTANTE:** não use a URL do Supabase Storage como `result_url`. O
+   Supabase forca qualquer HTML publico a ser servido como `text/plain` (bloqueio
+   de seguranca da propria plataforma contra hospedagem de XSS/phishing em
+   buckets publicos -- nao da pra contornar so com headers no upload). O site
+   tem uma Netlify Function (`netlify/functions/page.js` + redirect em
+   `netlify.toml`) que busca o arquivo no Storage e o reserve com o
+   content-type correto. Use **essa** URL, no mesmo formato do
+   `pages/dwst60436.html` original:
+   `result_url = /pages/<sku em minusculo>.html`
+   (URL relativa ao site, nao a URL completa do Supabase.)
 
 7. **Atualize o Supabase** (service_role key, tabela `requests`): `status=done`,
-   `result_url=<URL pública do Storage acima>`, `product_name=<nome real do
-   produto>`. Se algo impedir a geração (produto não encontrado em nenhum
-   site informado, por exemplo), marque `status=error` com uma
-   `error_message` clara e específica -- nunca deixe um pedido preso em
-   `processing` silenciosamente.
+   `result_url=/pages/<sku em minusculo>.html` (ver acima -- NUNCA a URL crua
+   do Storage), `product_name=<nome real do produto>`. Se algo impedir a
+   geração (produto não encontrado em nenhum site informado, por exemplo),
+   marque `status=error` com uma `error_message` clara e específica -- nunca
+   deixe um pedido preso em `processing` silenciosamente.
 
 8. Repita para cada pedido `pending` encontrado nesta execução.
 
