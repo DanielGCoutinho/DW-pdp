@@ -16,7 +16,8 @@
 const SUPABASE_URL = 'https://cyxhcnrfabtxusbzaokj.supabase.co';
 
 exports.handler = async function (event) {
-  const sku = (event.queryStringParameters && event.queryStringParameters.sku || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  const raw = (event.queryStringParameters && event.queryStringParameters.sku) || '';
+  const sku = raw.toLowerCase().replace(/\.html$/, '').replace(/[^a-z0-9_-]/g, '');
   if (!sku) {
     return { statusCode: 400, body: 'Missing sku parameter.' };
   }

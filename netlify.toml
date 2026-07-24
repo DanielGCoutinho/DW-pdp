@@ -8,6 +8,6 @@
 # (stored in Supabase Storage, proxied through the function below) work
 # under the same /pages/<sku>.html URL shape without a git push.
 [[redirects]]
-  from = "/pages/:sku.html"
-  to = "/.netlify/functions/page?sku=:sku"
+  from = "/pages/*"
+  to = "/.netlify/functions/page?sku=:splat"
   status = 200
