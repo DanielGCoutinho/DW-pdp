@@ -16,10 +16,18 @@
 const SUPABASE_URL = 'https://cyxhcnrfabtxusbzaokj.supabase.co';
 
 exports.handler = async function (event) {
-  const raw = (event.queryStringParameters && event.queryStringParameters.sku) || '';
+  // Prefer the query param (works when called directly, e.g. for testing),
+  // but fall back to parsing event.path -- Netlify's :splat-in-query-string
+  // interpolation for redirects-to-functions isn't reliable, while the
+  // original requested path always comes through on the event.
+  let raw = (event.queryStringParameters && event.queryStringParameters.sku) || '';
+  if (!raw && event.path) {
+    const m = event.path.match(/\/pages\/([^/]+)$/i);
+    if (m) raw = m[1];
+  }
   const sku = raw.toLowerCase().replace(/\.html$/, '').replace(/[^a-z0-9_-]/g, '');
   if (!sku) {
-    return { statusCode: 400, body: 'Missing sku parameter.' };
+    return { statusCode: 400, body: 'Missing sku parameter. path=' + event.path };
   }
 
   const upstreamUrl = `${SUPABASE_URL}/storage/v1/object/public/pages/${sku}.html`;
