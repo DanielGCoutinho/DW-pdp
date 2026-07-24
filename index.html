@@ -175,6 +175,27 @@ body{
         <textarea id="mensagem" placeholder="Alguma mensagem/diferencial que você quer enfatizar nesta página?"></textarea>
         <div class="hint">Deixe em branco pra usar julgamento padrão com base nas especificações oficiais.</div>
       </div>
+
+      <div class="field">
+        <label>SKUs DEWALT p/ comparativo diferenciadores (opcional, até 2)</label>
+        <div class="sites-grid">
+          <input type="text" id="compareSku1" placeholder="ex.: DWST08400" />
+          <input type="text" id="compareSku2" placeholder="ex.: DWST08450" />
+        </div>
+        <div class="hint">Pesquisados nos mesmos sites de referência acima. Em branco, o asset 07 segue como está hoje (comparativo interno genérico).</div>
+      </div>
+
+      <div class="field">
+        <label>Concorrentes p/ comparativo técnico (opcional, até 2)</label>
+        <div class="sites-grid">
+          <input type="text" id="competitorSku1" placeholder="SKU/nome do concorrente 1" />
+          <input type="text" id="competitorSite1" placeholder="Site pra pesquisar esse concorrente" />
+          <input type="text" id="competitorSku2" placeholder="SKU/nome do concorrente 2" />
+          <input type="text" id="competitorSite2" placeholder="Site pra pesquisar esse concorrente" />
+        </div>
+        <div class="hint">Com SKU + site preenchidos, o asset 06 usa dado real pesquisado em vez de ficar marcado como pendente.</div>
+      </div>
+
       <button class="btn" type="submit" id="submit-btn"><span>&#8681;</span> Gerar pedido</button>
       <div class="form-status" id="form-status"></div>
     </form>
@@ -286,6 +307,16 @@ body{
       .filter(Boolean);
     var mensagem = document.getElementById('mensagem').value.trim();
 
+    var compareSkus = ['compareSku1','compareSku2']
+      .map(function(id){ return document.getElementById(id).value.trim(); })
+      .filter(Boolean);
+
+    var competitorRefs = [['competitorSku1','competitorSite1'], ['competitorSku2','competitorSite2']]
+      .map(function(pair){
+        return { sku: document.getElementById(pair[0]).value.trim(), site: document.getElementById(pair[1]).value.trim() };
+      })
+      .filter(function(r){ return r.sku && r.site; });
+
     submitBtn.disabled = true;
     formStatus.textContent = 'Enviando...';
     formStatus.className = 'form-status';
@@ -294,6 +325,8 @@ body{
       sku: sku,
       sites: sites,
       mensagem: mensagem || null,
+      compare_skus: compareSkus,
+      competitor_refs: competitorRefs,
     });
 
     submitBtn.disabled = false;

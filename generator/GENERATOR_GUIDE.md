@@ -21,8 +21,13 @@ outros arquivos deste repositório.
 ## Credenciais (Supabase)
 
 - URL: `https://cyxhcnrfabtxusbzaokj.supabase.co`
-- Tabela: `requests` (colunas: id, sku, sites, mensagem, status, result_url,
-  product_name, error_message, created_at, updated_at)
+- Tabela: `requests` (colunas: id, sku, sites, mensagem, compare_skus,
+  competitor_refs, status, result_url, product_name, error_message,
+  created_at, updated_at)
+  - `compare_skus`: array de ate 2 SKUs DEWALT (linha/modelos irmaos) pra
+    usar de verdade no asset 07. Pode vir vazio.
+  - `competitor_refs`: array (jsonb) de ate 2 objetos `{"sku": "...", "site":
+    "..."}` pra usar de verdade no asset 06. Pode vir vazio, ou com só 1 item.
 - Para LER pedidos pendentes, use a service_role key (fornecida no prompt da
   rotina, nunca commitada neste repositório) via REST:
   `GET /rest/v1/requests?status=eq.pending&order=created_at.asc`
@@ -60,9 +65,30 @@ fotos baixadas, e o ambiente pode nao ter a biblioteca pre-instalada.
      peça e desse SKU -- nunca um texto genérico que serviria pra qualquer
      produto. Se não souber o que dizer de específico, é sinal de que não
      pesquisou o suficiente ainda.
+   - **Hero Shot (asset 01): ZERO faixas amarelas, zero headline, zero texto.**
+     Só o produto em fundo branco puro. Isso vale mesmo com o sistema de
+     barras amarelas sendo o padrão de todos os outros assets -- o Hero Shot
+     é a exceção deliberada, conforme a planilha-fonte e o guia de marca.
+     Nunca chame `bar('top')`/`bar('bottom')` nesse tile.
    - **Nunca invente dado de concorrente** (asset 06) nem número/certificação
      que não conseguiu confirmar na fonte oficial. Quando faltar, use
      `pending_ribbon(...)` e deixe claro no `flag` do `spec_row` o que falta.
+   - **Asset 06 (Comparativo técnico) com `competitor_refs` preenchido:**
+     para cada concorrente com `sku` E `site` preenchidos, pesquise de
+     verdade nesse site. Se achar um valor real e verificável, use
+     `compare_table(rows, cols)` com `cols` = os concorrentes (nomeados de
+     forma genérica, tipo "CONCORRENTE A"/"CONCORRENTE B", nunca a marca) +
+     o SKU atual por último (fica destacado em amarelo automaticamente). Se
+     `competitor_refs` vier vazio, OU a pesquisa não achar nada confiável
+     mesmo com site indicado, volta pro comportamento padrão: `pending_ribbon`
+     + "dado a confirmar" -- nunca invente só porque um site foi indicado.
+   - **Asset 07 (Comparativo diferenciadores) com `compare_skus` preenchido:**
+     pesquise cada SKU irmão listado nos MESMOS `sites` do pedido principal, e
+     monte `compare_table(rows, cols)` com `cols` = os SKUs irmãos + o SKU
+     atual por último (destacado). Se `compare_skus` vier vazio, mantenha o
+     comportamento atual (comparativo interno genérico: torre completa vs.
+     montar peça por peça) -- esse asset nunca depende de dado externo, então
+     nunca deveria ficar com flag de pendência de qualquer forma.
    - Para o asset 04 (Família), procure o gráfico oficial da linha no site da
      marca -- não crie um logo do zero. Se não achar nenhum, pule esse asset
      ou substitua por um texto simples, e sinalize isso no `flag`.

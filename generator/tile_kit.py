@@ -120,13 +120,31 @@ def chip_list(items):
     return f'<div class="dw-chiplist">{lis}</div>'
 
 
-def compare_table(rows, col_a, col_b):
-    """rows: list of (label, value_a, value_b). col_a/col_b: header labels."""
-    head = (f'<div class="cmp-row cmp-head"><div class="cmp-label"></div>'
-            f'<div class="cmp-a">{esc(col_a)}</div><div class="cmp-b">{esc(col_b)}</div></div>')
+def compare_table(rows, cols):
+    """Flexible comparison table -- supports 2 to 4 value columns (e.g. one
+    or two competitors/sibling SKUs plus the current SKU).
+
+    cols: ordered list of column header labels, 2-4 items. The LAST column
+    is always the highlighted one (yellow) -- put the current SKU/DEWALT
+    there.
+    rows: list of tuples (label, value_for_col0, value_for_col1, ...),
+    each with len(cols) values after the label.
+    """
+    n = len(cols)
+    grid = f"1.15fr repeat({n}, 1fr)"
+
+    def cells(values):
+        out = ""
+        for i, v in enumerate(values):
+            cls = "cmp-val cmp-highlight" if i == n - 1 else "cmp-val"
+            out += f'<div class="{cls}">{esc(v)}</div>'
+        return out
+
+    head = (f'<div class="cmp-row cmp-head" style="grid-template-columns:{grid}">'
+            f'<div class="cmp-label"></div>{cells(cols)}</div>')
     body = "".join(
-        f'<div class="cmp-row"><div class="cmp-label">{esc(r[0])}</div>'
-        f'<div class="cmp-a">{esc(r[1])}</div><div class="cmp-b">{esc(r[2])}</div></div>'
+        f'<div class="cmp-row" style="grid-template-columns:{grid}">'
+        f'<div class="cmp-label">{esc(r[0])}</div>{cells(r[1:])}</div>'
         for r in rows
     )
     return f'<div class="dw-compare">{head}{body}</div>'
@@ -500,17 +518,16 @@ body{
   font-weight:800; font-size:2.3cqw; text-transform:uppercase; letter-spacing:.03em; text-align:center; padding:1.6cqw 3%; }
 
 .dw-compare{ position:absolute; z-index:3; left:3.7%; right:3.7%; top:24%; bottom:13%; display:flex; flex-direction:column; }
-.cmp-row{ display:grid; grid-template-columns: 1.15fr 1fr 1fr; gap:2cqw; padding:2.4cqw 0; border-bottom:1px solid rgba(255,255,255,.14); align-items:center; }
+.cmp-row{ display:grid; gap:2cqw; padding:2.4cqw 0; border-bottom:1px solid rgba(255,255,255,.14); align-items:center; }
 .dw-field-white .cmp-row{ border-bottom:1px solid rgba(35,30,32,.14); }
 .cmp-row.cmp-head{ border-bottom:2px solid var(--dw-yellow); padding-bottom:1.8cqw; }
 .cmp-label{ font-size:2.15cqw; color:#cfcac6; }
 .dw-field-white .cmp-label{ color:#57524f; }
-.cmp-a, .cmp-b{ font-size:2.15cqw; font-weight:700; text-align:center; }
-.cmp-row.cmp-head .cmp-a{ color:#B9B4AE; font-size:2.15cqw; text-transform:uppercase; font-weight:800; letter-spacing:.02em;}
-.cmp-row.cmp-head .cmp-b{ color:var(--dw-yellow); font-size:2.15cqw; text-transform:uppercase; font-weight:800; letter-spacing:.02em;}
-.cmp-row:not(.cmp-head) .cmp-b{ color:var(--dw-yellow); }
-.cmp-row:not(.cmp-head) .cmp-a{ color:#fff; }
-.dw-field-white .cmp-row:not(.cmp-head) .cmp-a{ color:var(--dw-black); }
+.cmp-val{ font-size:2.15cqw; font-weight:700; text-align:center; color:#fff; }
+.dw-field-white .cmp-val{ color:var(--dw-black); }
+.cmp-val.cmp-highlight{ color:var(--dw-yellow); }
+.cmp-row.cmp-head .cmp-val{ color:#B9B4AE; text-transform:uppercase; font-weight:800; letter-spacing:.02em; }
+.cmp-row.cmp-head .cmp-val.cmp-highlight{ color:var(--dw-yellow); }
 
 /* Enriched (wide) module layout */
 .dw-tile-wide{ display:grid; grid-template-columns: 1.05fr 1fr; }
