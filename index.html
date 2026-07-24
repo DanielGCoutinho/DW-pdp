@@ -107,6 +107,13 @@ body{
   padding:10px 16px; border-radius:8px; text-decoration:none;
 }
 .page-row .p-link:hover{ background:#FFCB3D; }
+.p-actions{ display:flex; align-items:center; gap:10px; flex:none; }
+.p-delete{
+  font-family:inherit; font-size:12px; font-weight:600; color:var(--crit); background:transparent;
+  border:1px solid var(--border); border-radius:8px; padding:9px 13px; cursor:pointer;
+}
+.p-delete:hover{ border-color:var(--crit); background:var(--crit-soft); }
+.p-delete:disabled{ opacity:.6; cursor:not-allowed; }
 
 .status-pill{
   display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; text-transform:uppercase;
@@ -223,17 +230,40 @@ body{
       var desc = r.status === 'error' && r.error_message
         ? ('Erro: ' + r.error_message)
         : (r.mensagem || 'Sem mensagem principal especificada.');
-      return '<div class="page-row">' +
+      return '<div class="page-row" data-row-id="' + r.id + '">' +
         '<div class="p-main">' +
           '<span class="p-sku">' + r.sku + '</span>' +
           '<div class="p-name">' + name + '</div>' +
           '<div class="p-desc">' + desc + '</div>' +
           '<div class="p-date">Pedido em ' + date + '</div>' +
         '</div>' +
-        link +
+        '<div class="p-actions">' +
+          link +
+          '<button type="button" class="p-delete" data-delete-id="' + r.id + '" data-delete-sku="' + r.sku + '">Apagar</button>' +
+        '</div>' +
       '</div>';
     }).join('');
   }
+
+  pagesList.addEventListener('click', async function(e){
+    var btn = e.target.closest('.p-delete');
+    if (!btn) return;
+    var id = btn.getAttribute('data-delete-id');
+    var sku = btn.getAttribute('data-delete-sku');
+    if (!confirm('Apagar o pedido/página do SKU ' + sku + '? Isso remove da lista e não pode ser desfeito. (O arquivo HTML gerado, se existir, continua no servidor até ser removido à parte.)')) {
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Apagando...';
+    const { error } = await supabase.from('requests').delete().eq('id', id);
+    if (error) {
+      alert('Não foi possível apagar: ' + error.message);
+      btn.disabled = false;
+      btn.textContent = 'Apagar';
+      return;
+    }
+    loadPages();
+  });
 
   async function loadPages(){
     const { data, error } = await supabase
