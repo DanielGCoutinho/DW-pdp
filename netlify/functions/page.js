@@ -52,7 +52,7 @@ exports.handler = async function (event) {
     statusCode: 200,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=300',
+      'Cache-Control': 'public, max-age=30',
     },
     body: html,
   };
