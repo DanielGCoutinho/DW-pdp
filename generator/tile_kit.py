@@ -35,6 +35,7 @@ import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONTS_DIR = os.path.join(HERE, "fonts")
+INSPIRATION_DIR = os.path.join(HERE, "inspiration")
 
 DW_YELLOW = "#FEBD17"
 DW_BLACK = "#231E20"
@@ -75,6 +76,51 @@ def image_to_b64_jpeg(path, max_dim=1500, quality=84, bg=(255, 255, 255)):
 
 def esc(s):
     return htmlmod.escape(s, quote=True)
+
+
+# ---------------------------------------------------------------------------
+# Inspiration references -- real DEWALT (mostly) ad examples that show the
+# STYLE each asset type should aim for. These are fixed, generic style
+# references (not this SKU's own content), reused across every generated
+# page for the matching asset type. Do not research/replace these per-SKU.
+# ---------------------------------------------------------------------------
+INSPIRATION_MAP = {
+    "hero": ("hero.jpg", "Referência de estilo: still de produto limpo em fundo branco."),
+    "kit": ("kit.jpg", "Referência de estilo: grade \"o que vem na caixa\" com cada item rotulado."),
+    "diferenciais_infografico": ("diferenciais_infografico.jpg", "Referência de estilo: diagrama com múltiplos recursos indicados no próprio produto."),
+    "familia": ("familia.jpg", "Referência de estilo: lockup oficial de sub-linha/família."),
+    "diferencial_tecnico_1": ("diferencial_tecnico_1.jpg", "Referência de estilo: foto real de uso + estatística em destaque."),
+    "diferencial_tecnico_2": ("diferencial_tecnico_2.jpg", "Referência de estilo: comparação de peso/tamanho com estatística em destaque."),
+    "diferencial_tecnico_3": ("diferencial_tecnico_3.jpg", "Referência de estilo: foto de aplicação real + benefício em destaque."),
+    "comparativo_tecnico": ("comparativo_tecnico.jpg", "Referência de estilo: comparação direta com concorrente sem citar a marca (silhueta/cor genérica)."),
+    "comparativo_diferenciadores": ("comparativo_diferenciadores.jpg", "Referência de estilo: comparação interna entre modelos da própria linha."),
+    "aplicacao_1": ("aplicacao_1.jpg", "Referência de estilo: uso real em obra, sem encenação de estúdio."),
+    "aplicacao_2": ("aplicacao_2.jpg", "Referência de estilo: uso real com texto/benefício sobreposto."),
+    "linha_compativel": ("linha_compativel.jpg", "Referência de estilo: vitrine de todo o sistema/linha de produtos."),
+}
+
+
+def inspiration_image_b64(key):
+    fname, _ = INSPIRATION_MAP[key]
+    path = os.path.join(INSPIRATION_DIR, fname)
+    with open(path, "rb") as f:
+        data = f.read()
+    return "data:image/jpeg;base64," + base64.b64encode(data).decode("ascii")
+
+
+def inspiration_panel(key, wide=False):
+    """key: one of INSPIRATION_MAP's keys. Renders the fixed reference image
+    for that asset type as a third stage panel, alongside base/sugerido."""
+    _, caption = INSPIRATION_MAP[key]
+    frame_cls = "base-frame wide" if wide else "base-frame"
+    img_uri = inspiration_image_b64(key)
+    frame = f'<div class="stage-frame {frame_cls}"><img class="base-photo" src="{img_uri}" alt="Imagem de inspiracao" /></div>'
+    cap = f'<div class="save-hint">{esc(caption)}</div>'
+    return f'''<div class="stage-panel">
+      <div class="panel-label">Inspiração DEWALT (referência de estilo)</div>
+      {frame}
+      {cap}
+    </div>'''
 
 
 # ---------------------------------------------------------------------------
@@ -246,11 +292,15 @@ def brief_notes_block(asset_id, tech, mkt):
 
 def spec_row(n, name, fmt, instr, status_badge_html, tile_id, tile_html, tech, mkt,
              w=2000, h=2000, wide=False, flag=None, base_tile_id=None, base_note=None,
-             single=False, filename_stub="", sku=""):
+             single=False, filename_stub="", sku="", inspiration=None):
     """Builds one full asset row: meta panel (name/format/instruction/status/
     flag/briefing/notes) + stage (base-image panel + suggested-asset panel,
     or a single panel when single=True for assets with zero added text/
-    editing, like Hero Shot or an untouched official Family asset)."""
+    editing, like Hero Shot or an untouched official Family asset).
+
+    inspiration: a key from INSPIRATION_MAP, or None. When given, a third
+    panel with the fixed real-DEWALT style reference is shown alongside
+    base/sugerido."""
     flag_html = f'<div class="flag">{flag}</div>' if flag else ""
     cap = f"{w} x {h} px · JPG" if not wide else f"{w} x {h} px · JPG (módulo enriquecido, confirmar spec do marketplace)"
     export_fn = f"{sku}_{n:02d}_{filename_stub}.jpg" if sku else f"{n:02d}_{filename_stub}.jpg"
@@ -259,11 +309,17 @@ def spec_row(n, name, fmt, instr, status_badge_html, tile_id, tile_html, tech, m
     if single:
         panels = export_panel(tile_id, tile_html, w, h, export_fn, label="Asset (idêntico ao original oficial)")
         panels_cls = "stage-panels single"
+        if inspiration:
+            panels += inspiration_panel(inspiration, wide=wide)
+            panels_cls = "stage-panels"  # no longer "single" -- now 2 columns (sugerido + inspiracao)
     else:
         left = base_panel(base_tile_id or tile_id, wide=wide, note=base_note)
         right = export_panel(tile_id, tile_html, w, h, export_fn)
         panels = left + right
         panels_cls = "stage-panels"
+        if inspiration:
+            panels += inspiration_panel(inspiration, wide=wide)
+            panels_cls += " with-inspiration"
 
     return f"""
 <div class="spec-row">
@@ -412,6 +468,8 @@ body{
 .stage{ display:flex; flex-direction:column; gap:10px; }
 .stage-panels{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 .stage-panels.single{ grid-template-columns:1fr; max-width:480px; }
+.stage-panels.with-inspiration{ grid-template-columns:1fr 1fr 1fr; }
+@media (max-width:900px){ .stage-panels.with-inspiration{ grid-template-columns:1fr 1fr; } }
 @media (max-width:600px){ .stage-panels{grid-template-columns:1fr;} }
 
 .stage-panel{ display:flex; flex-direction:column; gap:9px; min-width:0; }
@@ -481,43 +539,53 @@ body{
 .dw-scrim{ position:absolute; left:0; right:0; height:55%; z-index:1; }
 .dw-scrim-bottom{ bottom:0; background:linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,0)); }
 
-.dw-bar{ position:absolute; left:0; right:0; height:10.2%; background:var(--dw-yellow); z-index:3; display:flex; align-items:center; padding:0 3.7%; }
+/* Yellow LINES (thin rule), not thick bars -- a deliberate brand-system
+   refinement for PDP assets. The logo no longer sits inside the line (it's
+   too thin to hold text); it floats as its own small badge just beneath the
+   top line instead. All the percentage offsets below (headline, chiplist,
+   badgestack, compare, pending-ribbon, eyebrow) were retuned to reclaim the
+   space the old ~10%-tall bar used to occupy. */
+.dw-bar{ position:absolute; left:0; right:0; height:0.7%; background:var(--dw-yellow); z-index:3; }
 .dw-bar-top{ top:0; } .dw-bar-bottom{ bottom:0; }
-.tile-logo{ font-family:'Archivo Expanded Black'; font-weight:900; color:var(--dw-black); text-transform:uppercase; font-size:4.6cqw; letter-spacing:-0.02em; }
+.tile-logo{
+  position:absolute; z-index:4; top:2.2%; left:3.7%;
+  font-family:'Archivo Expanded Black'; font-weight:900; color:var(--dw-yellow); text-transform:uppercase;
+  font-size:2.6cqw; letter-spacing:-0.01em; background:rgba(35,30,32,.72); padding:0.9cqw 1.6cqw; border-radius:2px;
+}
 
 .dw-headline{ position:absolute; z-index:3; font-family:'Archivo Expanded Black'; font-weight:900; text-transform:uppercase; line-height:.86; letter-spacing:-0.015em; }
 .dw-headline span{display:block;}
 .dw-headline .l1{color:#fff;} .dw-headline .l2{color:var(--dw-yellow);}
 .dw-headline-md{ font-size:8.6cqw; }
 .dw-headline-sm{ font-size:6.6cqw; }
-.dw-headline-bl{ left:3.7%; bottom:13%; max-width:80%; }
-.dw-headline-tl{ left:3.7%; top:13.5%; max-width:78%; }
+.dw-headline-bl{ left:3.7%; bottom:5%; max-width:80%; }
+.dw-headline-tl{ left:3.7%; top:9%; max-width:78%; }
 .dw-field-white .dw-headline .l1{ color:var(--dw-black); }
 
-.dw-tag{ position:absolute; z-index:3; left:3.7%; bottom:4.2%; background:var(--dw-yellow); color:var(--dw-black);
+.dw-tag{ position:absolute; z-index:3; left:3.7%; bottom:3%; background:var(--dw-yellow); color:var(--dw-black);
   font-weight:800; font-size:2.9cqw; text-transform:uppercase; letter-spacing:.02em; padding:1.4cqw 2.6cqw; border-radius:2px; }
 
-.dw-eyebrow{ position:absolute; z-index:3; left:3.7%; top:14%; color:var(--dw-offwhite); text-transform:uppercase;
+.dw-eyebrow{ position:absolute; z-index:3; left:3.7%; top:9%; color:var(--dw-offwhite); text-transform:uppercase;
   font-size:2.6cqw; letter-spacing:.08em; font-weight:700; opacity:.85; }
 
-.dw-badgestack{ position:absolute; z-index:3; right:3.7%; top:24%; display:flex; flex-direction:column; gap:2.6cqw; width:46%; }
+.dw-badgestack{ position:absolute; z-index:3; right:3.7%; top:11%; display:flex; flex-direction:column; gap:2.6cqw; width:46%; }
 .dw-badgestack-right{ align-items:flex-end; }
 .dw-badge{ background:var(--dw-black); color:#fff; border-left:.9cqw solid var(--dw-yellow); padding:1.6cqw 2.4cqw; text-align:left; }
 .dw-badge-sku{ display:block; font-weight:800; font-size:2.5cqw; color:var(--dw-yellow); letter-spacing:.03em; }
 .dw-badge-txt{ display:block; font-size:2.35cqw; line-height:1.25; margin-top:.4cqw; }
 
 .dw-chiplist{ position:absolute; z-index:3; left:3.7%; right:3.7%; display:flex; flex-direction:column; gap:2cqw; }
-.dw-tile-chips-bottom .dw-chiplist{ bottom:13%; }
-.dw-tile:not(.dw-tile-chips-bottom) .dw-chiplist{ top:26%; }
+.dw-tile-chips-bottom .dw-chiplist{ bottom:5%; }
+.dw-tile:not(.dw-tile-chips-bottom) .dw-chiplist{ top:11%; }
 .dw-chip{ display:flex; align-items:center; gap:2.2cqw; background:rgba(35,30,32,.9); padding:1.7cqw 2.2cqw; border-radius:3px; }
 .dw-field-white .dw-chip{ background:var(--dw-black); }
 .dw-chip-n{ font-family:'Archivo Expanded Black'; color:var(--dw-yellow); font-size:3.1cqw; font-weight:900; min-width:5.5cqw; }
 .dw-chip-t{ color:#fff; font-size:2.35cqw; line-height:1.3; }
 
-.dw-pending-ribbon{ position:absolute; z-index:4; left:0; right:0; top:10.2%; background:#9A2E1F; color:#fff;
+.dw-pending-ribbon{ position:absolute; z-index:4; left:0; right:0; top:9%; background:#9A2E1F; color:#fff;
   font-weight:800; font-size:2.3cqw; text-transform:uppercase; letter-spacing:.03em; text-align:center; padding:1.6cqw 3%; }
 
-.dw-compare{ position:absolute; z-index:3; left:3.7%; right:3.7%; top:24%; bottom:13%; display:flex; flex-direction:column; }
+.dw-compare{ position:absolute; z-index:3; left:3.7%; right:3.7%; top:11%; bottom:5%; display:flex; flex-direction:column; }
 .cmp-row{ display:grid; gap:2cqw; padding:2.4cqw 0; border-bottom:1px solid rgba(255,255,255,.14); align-items:center; }
 .dw-field-white .cmp-row{ border-bottom:1px solid rgba(35,30,32,.14); }
 .cmp-row.cmp-head{ border-bottom:2px solid var(--dw-yellow); padding-bottom:1.8cqw; }

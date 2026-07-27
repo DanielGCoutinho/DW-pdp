@@ -11,11 +11,20 @@ outros arquivos deste repositório.
   (cores/fontes/CSS da marca DEWALT, funções de montagem de cada tipo de
   asset, exportador via lightbox, etc). Importe e use as funções dela --
   não recrie o CSS/HTML do zero.
-- `generator/pdp_asset_spec.json` -- a lista padrão de 10 assets principais +
-  4 páginas enriquecidas que toda página deve ter (nomes, formato, instrução
-  original da planilha-fonte). Use isso para saber o que gerar.
-- `pages/dwst60436.html` -- a primeira página gerada manualmente. É a
-  referência de qualidade/estilo -- abra e leia se tiver dúvida de como um
+- `generator/pdp_asset_spec.json` -- a lista padrão de **14 assets
+  principais + 4 páginas enriquecidas** (18 no total) que toda página deve
+  ter (nomes, formato, instrução original da planilha-fonte, e a chave de
+  `inspiration` de cada um). Use isso para saber o que gerar -- os números
+  dos assets abaixo neste guia (ex.: "asset 08") seguem essa numeração.
+- `generator/inspiration/*.jpg` -- referências reais de estilo (a maioria
+  anúncios/materiais oficiais DEWALT), uma por tipo de asset. Fixas e
+  genéricas, **não são pesquisadas por SKU** -- veja `tile_kit.INSPIRATION_MAP`
+  para a chave certa de cada asset (já mapeada em `pdp_asset_spec.json`).
+  Passe a chave pra `spec_row(..., inspiration=CHAVE)` -- todo asset
+  principal (1 a 14) deve receber uma.
+- Alguma página já publicada em `site/pages/` (se houver) ou no bucket do
+  Supabase Storage serve de referência de qualidade/estilo -- confira o
+  Supabase (`result_url` de um pedido `done`) se tiver dúvida de como um
   asset deveria ficar.
 
 ## Credenciais (Supabase)
@@ -25,9 +34,10 @@ outros arquivos deste repositório.
   competitor_refs, status, result_url, product_name, error_message,
   created_at, updated_at)
   - `compare_skus`: array de ate 2 SKUs DEWALT (linha/modelos irmaos) pra
-    usar de verdade no asset 07. Pode vir vazio.
+    usar de verdade no asset 09 (Comparativo diferenciadores). Pode vir vazio.
   - `competitor_refs`: array (jsonb) de ate 2 objetos `{"sku": "...", "site":
-    "..."}` pra usar de verdade no asset 06. Pode vir vazio, ou com só 1 item.
+    "..."}` pra usar de verdade no asset 08 (Comparativo tecnico). Pode vir
+    vazio, ou com só 1 item.
 - Para LER pedidos pendentes, use a service_role key (fornecida no prompt da
   rotina, nunca commitada neste repositório) via REST:
   `GET /rest/v1/requests?status=eq.pending&order=created_at.asc`
@@ -57,23 +67,36 @@ fotos baixadas, e o ambiente pode nao ter a biblioteca pre-instalada.
 3. **Redimensione as imagens** com `tile_kit.image_to_b64_jpeg(caminho)`
    antes de montar os tiles (mantém a página em tamanho razoável).
 
-4. **Monte os 10 assets principais + 4 páginas enriquecidas** seguindo
+4. **Monte os 14 assets principais + 4 páginas enriquecidas** seguindo
    `pdp_asset_spec.json`, usando as funções de `tile_kit.py`
    (`tile`, `wide_tile`, `bar`, `headline`, `chip_list`, `badge_stack`,
    `compare_table`, `spec_row`, `badge`, etc). Para cada asset:
+   - **Sempre passe `inspiration=<chave>` pro `spec_row`** usando a chave
+     indicada em `pdp_asset_spec.json` pra aquele asset (vem de
+     `tile_kit.INSPIRATION_MAP`). Isso mostra a referência real de estilo ao
+     lado da imagem-base/sugerida -- não pule esse parâmetro.
    - Escreva um briefing técnico e um de marketing **específicos** dessa
      peça e desse SKU -- nunca um texto genérico que serviria pra qualquer
      produto. Se não souber o que dizer de específico, é sinal de que não
      pesquisou o suficiente ainda.
-   - **Hero Shot (asset 01): ZERO faixas amarelas, zero headline, zero texto.**
+   - **Hero Shot (asset 01): ZERO linhas amarelas, zero headline, zero texto.**
      Só o produto em fundo branco puro. Isso vale mesmo com o sistema de
-     barras amarelas sendo o padrão de todos os outros assets -- o Hero Shot
+     linhas amarelas sendo o padrão de todos os outros assets -- o Hero Shot
      é a exceção deliberada, conforme a planilha-fonte e o guia de marca.
      Nunca chame `bar('top')`/`bar('bottom')` nesse tile.
-   - **Nunca invente dado de concorrente** (asset 06) nem número/certificação
+   - **Assets 05, 06 e 07 (Diferencial técnico A/B/C) devem ser 3 valores
+     REAIS e DISTINTOS** -- nunca repita o mesmo ponto reformulado. Se só
+     achou um diferencial forte e verificável, diga isso no `flag` de cada
+     asset extra em vez de inventar ou repetir.
+   - **Assets 10, 12, 13 e 14 (Aplicação A/B/C/D) devem usar fotos reais
+     DISTINTAS** (ângulos/contextos de uso diferentes) sempre que a pesquisa
+     encontrar mais de uma; se só achar 1-2 fotos de aplicação reais no
+     total, reaproveite a mesma foto em mais de um asset em vez de inventar
+     uma cena, e sinalize isso no `flag`.
+   - **Nunca invente dado de concorrente** (asset 08) nem número/certificação
      que não conseguiu confirmar na fonte oficial. Quando faltar, use
      `pending_ribbon(...)` e deixe claro no `flag` do `spec_row` o que falta.
-   - **Asset 06 (Comparativo técnico) com `competitor_refs` preenchido:**
+   - **Asset 08 (Comparativo técnico) com `competitor_refs` preenchido:**
      para cada concorrente com `sku` E `site` preenchidos, pesquise de
      verdade nesse site. Se achar um valor real e verificável, use
      `compare_table(rows, cols)` com `cols` = os concorrentes (nomeados de
@@ -82,7 +105,7 @@ fotos baixadas, e o ambiente pode nao ter a biblioteca pre-instalada.
      `competitor_refs` vier vazio, OU a pesquisa não achar nada confiável
      mesmo com site indicado, volta pro comportamento padrão: `pending_ribbon`
      + "dado a confirmar" -- nunca invente só porque um site foi indicado.
-   - **Asset 07 (Comparativo diferenciadores) com `compare_skus` preenchido:**
+   - **Asset 09 (Comparativo diferenciadores) com `compare_skus` preenchido:**
      pesquise cada SKU irmão listado nos MESMOS `sites` do pedido principal, e
      monte `compare_table(rows, cols)` com `cols` = os SKUs irmãos + o SKU
      atual por último (destacado). Se `compare_skus` vier vazio, mantenha o
@@ -146,5 +169,6 @@ não é um erro passageiro, é como este ambiente está configurado.
 - Copy (headlines/bullets) é sempre rascunho -- está tudo bem ser criativo,
   mas mantenha o badge "Copy em revisão" em cada asset com texto autoral.
 - Sempre que assumir algo que não veio explícito no pedido ou na fonte
-  (formato, instrução, critério de comparação), diga isso no `flag` do
-  `spec_row` -- igual foi feito para os assets 09/10 do DWST60436.
+  (formato, instrução, critério de comparação, reaproveitamento de foto por
+  falta de mais fotos reais), diga isso no `flag` do `spec_row` -- igual foi
+  feito para os assets 11/12 do DWST60436 original.
