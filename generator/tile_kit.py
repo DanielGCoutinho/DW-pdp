@@ -35,7 +35,6 @@ import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONTS_DIR = os.path.join(HERE, "fonts")
-INSPIRATION_DIR = os.path.join(HERE, "inspiration")
 
 DW_YELLOW = "#FEBD17"
 DW_BLACK = "#231E20"
@@ -76,53 +75,6 @@ def image_to_b64_jpeg(path, max_dim=1500, quality=84, bg=(255, 255, 255)):
 
 def esc(s):
     return htmlmod.escape(s, quote=True)
-
-
-# ---------------------------------------------------------------------------
-# Inspiration references -- real DEWALT (mostly) ad examples that show the
-# STYLE each asset type should aim for. These are fixed, generic style
-# references (not this SKU's own content), reused across every generated
-# page for the matching asset type. Do not research/replace these per-SKU.
-# ---------------------------------------------------------------------------
-INSPIRATION_MAP = {
-    "hero": ("hero.jpg", "Referência de estilo: still de produto limpo em fundo branco."),
-    "kit": ("kit.jpg", "Referência de estilo: grade \"o que vem na caixa\" com cada item rotulado."),
-    "diferenciais_infografico": ("diferenciais_infografico.jpg", "Referência de estilo: diagrama com múltiplos recursos indicados no próprio produto."),
-    "familia": ("familia.jpg", "Referência de estilo: lockup oficial de sub-linha/família."),
-    "diferencial_tecnico_1": ("diferencial_tecnico_1.jpg", "Referência de estilo: foto real de uso + estatística em destaque."),
-    "diferencial_tecnico_2": ("diferencial_tecnico_2.jpg", "Referência de estilo: comparação de peso/tamanho com estatística em destaque."),
-    "diferencial_tecnico_3": ("diferencial_tecnico_3.jpg", "Referência de estilo: foto de aplicação real + benefício em destaque."),
-    "comparativo_tecnico": ("comparativo_tecnico.jpg", "Referência de estilo: comparação direta com concorrente sem citar a marca (silhueta/cor genérica)."),
-    "comparativo_diferenciadores": ("comparativo_diferenciadores.jpg", "Referência de estilo: comparação interna entre modelos da própria linha."),
-    "aplicacao_1": ("aplicacao_1.jpg", "Referência de estilo: uso real em obra, sem encenação de estúdio."),
-    "aplicacao_2": ("aplicacao_2.jpg", "Referência de estilo: uso real com texto/benefício sobreposto."),
-    "linha_compativel": ("linha_compativel.jpg", "Referência de estilo: vitrine de todo o sistema/linha de produtos."),
-}
-
-
-def inspiration_image_b64(key):
-    fname, _ = INSPIRATION_MAP[key]
-    path = os.path.join(INSPIRATION_DIR, fname)
-    with open(path, "rb") as f:
-        data = f.read()
-    return "data:image/jpeg;base64," + base64.b64encode(data).decode("ascii")
-
-
-def inspiration_panel(key, wide=False):
-    """key: one of INSPIRATION_MAP's keys. Renders the fixed reference image
-    for that asset type as a third stage panel, alongside base/sugerido."""
-    _, caption = INSPIRATION_MAP[key]
-    frame_cls = "base-frame wide" if wide else "base-frame"
-    img_uri = inspiration_image_b64(key)
-    frame = f'<div class="stage-frame {frame_cls}"><img class="base-photo" src="{img_uri}" alt="Imagem de inspiracao" /></div>'
-    cap = f'<div class="save-hint">{esc(caption)}</div>'
-    return f'''<div class="stage-panel">
-      <div class="panel-label">Inspiração DEWALT (referência de estilo)</div>
-      {frame}
-      {cap}
-    </div>'''
-
-
 # ---------------------------------------------------------------------------
 # Tile building blocks (one "asset" = one .dw-tile, either square 1:1 or the
 # wide 1200:628 enriched-page layout). These mirror the DWST60436 page 1:1 --
@@ -292,15 +244,11 @@ def brief_notes_block(asset_id, tech, mkt):
 
 def spec_row(n, name, fmt, instr, status_badge_html, tile_id, tile_html, tech, mkt,
              w=2000, h=2000, wide=False, flag=None, base_tile_id=None, base_note=None,
-             single=False, filename_stub="", sku="", inspiration=None):
+             single=False, filename_stub="", sku=""):
     """Builds one full asset row: meta panel (name/format/instruction/status/
     flag/briefing/notes) + stage (base-image panel + suggested-asset panel,
     or a single panel when single=True for assets with zero added text/
-    editing, like Hero Shot or an untouched official Family asset).
-
-    inspiration: a key from INSPIRATION_MAP, or None. When given, a third
-    panel with the fixed real-DEWALT style reference is shown alongside
-    base/sugerido."""
+    editing, like Hero Shot or an untouched official Family asset)."""
     flag_html = f'<div class="flag">{flag}</div>' if flag else ""
     cap = f"{w} x {h} px · JPG" if not wide else f"{w} x {h} px · JPG (módulo enriquecido, confirmar spec do marketplace)"
     export_fn = f"{sku}_{n:02d}_{filename_stub}.jpg" if sku else f"{n:02d}_{filename_stub}.jpg"
@@ -309,17 +257,11 @@ def spec_row(n, name, fmt, instr, status_badge_html, tile_id, tile_html, tech, m
     if single:
         panels = export_panel(tile_id, tile_html, w, h, export_fn, label="Asset (idêntico ao original oficial)")
         panels_cls = "stage-panels single"
-        if inspiration:
-            panels += inspiration_panel(inspiration, wide=wide)
-            panels_cls = "stage-panels"  # no longer "single" -- now 2 columns (sugerido + inspiracao)
     else:
         left = base_panel(base_tile_id or tile_id, wide=wide, note=base_note)
         right = export_panel(tile_id, tile_html, w, h, export_fn)
         panels = left + right
         panels_cls = "stage-panels"
-        if inspiration:
-            panels += inspiration_panel(inspiration, wide=wide)
-            panels_cls += " with-inspiration"
 
     return f"""
 <div class="spec-row">
@@ -468,8 +410,6 @@ body{
 .stage{ display:flex; flex-direction:column; gap:10px; }
 .stage-panels{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 .stage-panels.single{ grid-template-columns:1fr; max-width:480px; }
-.stage-panels.with-inspiration{ grid-template-columns:1fr 1fr 1fr; }
-@media (max-width:900px){ .stage-panels.with-inspiration{ grid-template-columns:1fr 1fr; } }
 @media (max-width:600px){ .stage-panels{grid-template-columns:1fr;} }
 
 .stage-panel{ display:flex; flex-direction:column; gap:9px; min-width:0; }

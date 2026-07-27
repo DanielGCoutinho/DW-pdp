@@ -1,32 +1,138 @@
 {
-  "_comment": "Extracted from the source spreadsheet 'Template PDP DeWalt' (SBD_Brand_Commerce_Playbook_Outputs.xlsx, sheet 'Template PDP'). This is the standard asset list every generated SKU page should cover. Format/instruction text is verbatim or lightly paraphrased from that sheet. Assets without an explicit instruction/format in the source sheet are noted below and were extrapolated in the first generation (DWST60436) -- keep doing that consistently, and flag the extrapolation in the row's `flag` field like DWST60436 did. Expanded on 2026-07-27: 3 Diferencial tecnico variants (was 1) and 4 Aplicacao variants (was 2), for consistency/coverage. Each asset also carries an `inspiration` key -- pass it straight to spec_row(..., inspiration=KEY); see tile_kit.py's INSPIRATION_MAP for what each key shows. These are fixed real-DEWALT style references, not researched per SKU.",
+  "_comment": "Extracted from the source spreadsheet 'Template PDP DeWalt' (SBD_Brand_Commerce_Playbook_Outputs.xlsx, sheet 'Template PDP'). This is the standard asset list every generated SKU page should cover. Format/instruction text is verbatim or lightly paraphrased from that sheet. Assets without an explicit instruction/format in the source sheet are noted below and were extrapolated in the first generation (DWST60436) -- keep doing that consistently, and flag the extrapolation in the row's `flag` field like DWST60436 did. Expanded on 2026-07-27: 3 Diferencial tecnico variants (was 1) and 4 Aplicacao variants (was 2), for consistency/coverage.",
   "core_assets": [
-    {"n": 1, "name": "Hero Shot", "format": "2000x2000 - JPG", "instruction": "Imagem solo do produto em fundo branco, na melhor posicao possivel.", "inspiration": "hero", "notes": "NO bar('top')/bar('bottom') calls at all -- zero yellow lines, zero headline, zero text. Pure white background, product only. This is a hard rule from the source spreadsheet and the brand toolkit's marketplace hero-shot convention, not a style preference -- do not add the yellow frame here even though every other asset uses it. single=True (base image IS the final asset)."},
-    {"n": 2, "name": "Conteudo da caixa ou do kit", "format": "2000x2000 - JPG", "instruction": "Detalhar os SKUs filhos em caso de kit, ou em caso de produto sem bateria informar.", "inspiration": "kit", "notes": "If the SKU is a kit/bundle of sub-parts, label each with its own SKU + short description. If it's a single non-kit product, show what's in the box instead (accessories, batteries or lack thereof, etc)."},
-    {"n": 3, "name": "Diferenciais tecnicos", "format": "2000x2000 - JPG", "instruction": "Infografico mostrando os detalhes e diferenciais tecnicos do SKU.", "inspiration": "diferenciais_infografico", "notes": "4ish callouts (chip_list), the single most differentiating real mechanism/feature as the headline."},
-    {"n": 4, "name": "Familia", "format": "2000x2000 - JPG", "instruction": "Logo oficial da familia que o SKU faz parte.", "inspiration": "familia", "notes": "Use the official family/line lockup graphic verbatim if you can find one on the brand's own site -- do not fabricate a logo. single=True. If no official family graphic exists for this line, say so and skip or substitute with plain text lockup, flagged."},
-    {"n": 5, "name": "Diferencial tecnico A", "format": "2000x2000 - JPG", "instruction": "Imagem aplicada ou comparativa com outro produto informando em destaque o principal valor entregue pelo item (valor entregue - o que entregamos).", "inspiration": "diferencial_tecnico_1", "notes": "One single, evidence-backed value prop (e.g. a real certification/rating), shown with a real photo, not a studio still, when possible."},
-    {"n": 6, "name": "Diferencial tecnico B", "format": "2000x2000 - JPG", "instruction": "Mesma instrucao do asset 05, aplicada a um SEGUNDO valor/diferencial real e distinto do SKU (nao repetir o mesmo ponto).", "inspiration": "diferencial_tecnico_2", "notes": "Added 2026-07-27 for coverage -- pick a genuinely different real spec/benefit than asset 05 (e.g. peso, durabilidade, velocidade, precisao). Never invent a number; if you only found one strong verifiable value prop, say so in the flag and pick the next-best real, specific detail rather than padding with generic marketing language."},
-    {"n": 7, "name": "Diferencial tecnico C", "format": "2000x2000 - JPG", "instruction": "Mesma instrucao do asset 05, aplicada a um TERCEIRO valor/diferencial real e distinto dos assets 05 e 06.", "inspiration": "diferencial_tecnico_3", "notes": "Added 2026-07-27 for coverage -- same rule as asset 06: a genuinely distinct, real, verifiable value prop, not a rephrasing of 05/06."},
-    {"n": 8, "name": "Comparativo tecnico", "format": "2000x2000 - JPG", "instruction": "Comparacao com competidores sem dizer o nome por cores de identificacao -- definir o quesito que vamos comparar.", "inspiration": "comparativo_tecnico", "notes": "Check the request's `competitor_refs` field (up to 2 entries: {sku, site}). For each one WITH both sku and site filled in, research it for real at that site and use the real value found, with the competitor named generically (e.g. 'CONCORRENTE A', 'CONCORRENTE B') per the no-brand-name rule -- use compare_table(rows, cols) with cols = up to 2 competitor headers + the current SKU last (highlighted). If competitor_refs is empty, OR research at the given site genuinely doesn't turn up a verifiable value, fall back to the original behavior: pending_ribbon + 'dado a confirmar' for that competitor -- never invent a number just because a site was provided if that site didn't actually have it."},
-    {"n": 9, "name": "Comparativo diferenciadores", "format": "2000x2000 - JPG", "instruction": "Comparativo com modelos similares DeWalt (mostra diferencas relevantes para o usuario).", "inspiration": "comparativo_diferenciadores", "notes": "Check the request's `compare_skus` field (up to 2 DEWALT sibling SKUs). If present, research each one at the SAME sites given for the main SKU (the `sites` field) and build compare_table(rows, cols) with cols = the sibling SKU(s) + the current SKU last (highlighted), using real specs from both. If compare_skus is empty, keep the original behavior (generic internal comparison: this SKU as a complete/ready option vs. buying pieces separately) -- no external data dependency either way, so this asset should never carry a pending flag."},
-    {"n": 10, "name": "Aplicacao A", "format": "2000x2000 - JPG", "instruction": "Imagem focada em uma aplicacao ou linha de produto (ex.: aplicacao para obras, linha premium, uma profissao).", "inspiration": "aplicacao_1", "notes": "Real lifestyle/application photo, not a studio still."},
-    {"n": 11, "name": "Linha de Produtos compativeis", "format": "2000x2000 - JPG (assumed -- not filled in source sheet)", "instruction": "Not specified in the source sheet -- infer from the product's own compatibility/retrocompatibility claims on its official spec page.", "inspiration": "linha_compativel", "notes": "No photo needed -- plain informational black-field asset is fine, matching DWST60436."},
-    {"n": 12, "name": "Aplicacao B", "format": "Not specified in source sheet (use 2000x2000 for consistency)", "instruction": "Uso real da aplicacao com bullets tecnicos ou diferenciais.", "inspiration": "aplicacao_2", "notes": "This is the original 'second application' slot from the source sheet -- WITH bullet chips overlaid (unlike Aplicacao A)."},
-    {"n": 13, "name": "Aplicacao C", "format": "2000x2000 - JPG (assumed, for consistency)", "instruction": "Nao especificado na planilha original -- terceira aplicacao real, um angulo/contexto de uso diferente das aplicacoes A e B.", "inspiration": "aplicacao_1", "notes": "Added 2026-07-27 for coverage. Real photo, different context/angle than assets 10 and 12 (e.g. different jobsite type, different way of holding/using the tool)."},
-    {"n": 14, "name": "Aplicacao D", "format": "2000x2000 - JPG (assumed, for consistency)", "instruction": "Nao especificado na planilha original -- quarta aplicacao real, com bullets tecnicos ou diferenciais (como a Aplicacao B).", "inspiration": "aplicacao_2", "notes": "Added 2026-07-27 for coverage. WITH bullet chips overlaid, same pattern as Aplicacao B but a different real photo/context."}
+    {
+      "n": 1,
+      "name": "Hero Shot",
+      "format": "2000x2000 - JPG",
+      "instruction": "Imagem solo do produto em fundo branco, na melhor posicao possivel.",
+      "notes": "NO bar('top')/bar('bottom') calls at all -- zero yellow lines, zero headline, zero text. Pure white background, product only. This is a hard rule from the source spreadsheet and the brand toolkit's marketplace hero-shot convention, not a style preference -- do not add the yellow frame here even though every other asset uses it. single=True (base image IS the final asset)."
+    },
+    {
+      "n": 2,
+      "name": "Conteudo da caixa ou do kit",
+      "format": "2000x2000 - JPG",
+      "instruction": "Detalhar os SKUs filhos em caso de kit, ou em caso de produto sem bateria informar.",
+      "notes": "If the SKU is a kit/bundle of sub-parts, label each with its own SKU + short description. If it's a single non-kit product, show what's in the box instead (accessories, batteries or lack thereof, etc)."
+    },
+    {
+      "n": 3,
+      "name": "Diferenciais tecnicos",
+      "format": "2000x2000 - JPG",
+      "instruction": "Infografico mostrando os detalhes e diferenciais tecnicos do SKU.",
+      "notes": "4ish callouts (chip_list), the single most differentiating real mechanism/feature as the headline."
+    },
+    {
+      "n": 4,
+      "name": "Familia",
+      "format": "2000x2000 - JPG",
+      "instruction": "Logo oficial da familia que o SKU faz parte.",
+      "notes": "Use the official family/line lockup graphic verbatim if you can find one on the brand's own site -- do not fabricate a logo. single=True. If no official family graphic exists for this line, say so and skip or substitute with plain text lockup, flagged."
+    },
+    {
+      "n": 5,
+      "name": "Diferencial tecnico A",
+      "format": "2000x2000 - JPG",
+      "instruction": "Imagem aplicada ou comparativa com outro produto informando em destaque o principal valor entregue pelo item (valor entregue - o que entregamos).",
+      "notes": "One single, evidence-backed value prop (e.g. a real certification/rating), shown with a real photo, not a studio still, when possible."
+    },
+    {
+      "n": 6,
+      "name": "Diferencial tecnico B",
+      "format": "2000x2000 - JPG",
+      "instruction": "Mesma instrucao do asset 05, aplicada a um SEGUNDO valor/diferencial real e distinto do SKU (nao repetir o mesmo ponto).",
+      "notes": "Added 2026-07-27 for coverage -- pick a genuinely different real spec/benefit than asset 05 (e.g. peso, durabilidade, velocidade, precisao). Never invent a number; if you only found one strong verifiable value prop, say so in the flag and pick the next-best real, specific detail rather than padding with generic marketing language."
+    },
+    {
+      "n": 7,
+      "name": "Diferencial tecnico C",
+      "format": "2000x2000 - JPG",
+      "instruction": "Mesma instrucao do asset 05, aplicada a um TERCEIRO valor/diferencial real e distinto dos assets 05 e 06.",
+      "notes": "Added 2026-07-27 for coverage -- same rule as asset 06: a genuinely distinct, real, verifiable value prop, not a rephrasing of 05/06."
+    },
+    {
+      "n": 8,
+      "name": "Comparativo tecnico",
+      "format": "2000x2000 - JPG",
+      "instruction": "Comparacao com competidores sem dizer o nome por cores de identificacao -- definir o quesito que vamos comparar.",
+      "notes": "Check the request's `competitor_refs` field (up to 2 entries: {sku, site}). For each one WITH both sku and site filled in, research it for real at that site and use the real value found, with the competitor named generically (e.g. 'CONCORRENTE A', 'CONCORRENTE B') per the no-brand-name rule -- use compare_table(rows, cols) with cols = up to 2 competitor headers + the current SKU last (highlighted). If competitor_refs is empty, OR research at the given site genuinely doesn't turn up a verifiable value, fall back to the original behavior: pending_ribbon + 'dado a confirmar' for that competitor -- never invent a number just because a site was provided if that site didn't actually have it."
+    },
+    {
+      "n": 9,
+      "name": "Comparativo diferenciadores",
+      "format": "2000x2000 - JPG",
+      "instruction": "Comparativo com modelos similares DeWalt (mostra diferencas relevantes para o usuario).",
+      "notes": "Check the request's `compare_skus` field (up to 2 DEWALT sibling SKUs). If present, research each one at the SAME sites given for the main SKU (the `sites` field) and build compare_table(rows, cols) with cols = the sibling SKU(s) + the current SKU last (highlighted), using real specs from both. If compare_skus is empty, keep the original behavior (generic internal comparison: this SKU as a complete/ready option vs. buying pieces separately) -- no external data dependency either way, so this asset should never carry a pending flag."
+    },
+    {
+      "n": 10,
+      "name": "Aplicacao A",
+      "format": "2000x2000 - JPG",
+      "instruction": "Imagem focada em uma aplicacao ou linha de produto (ex.: aplicacao para obras, linha premium, uma profissao).",
+      "notes": "Real lifestyle/application photo, not a studio still."
+    },
+    {
+      "n": 11,
+      "name": "Linha de Produtos compativeis",
+      "format": "2000x2000 - JPG (assumed -- not filled in source sheet)",
+      "instruction": "Not specified in the source sheet -- infer from the product's own compatibility/retrocompatibility claims on its official spec page.",
+      "notes": "No photo needed -- plain informational black-field asset is fine, matching DWST60436."
+    },
+    {
+      "n": 12,
+      "name": "Aplicacao B",
+      "format": "Not specified in source sheet (use 2000x2000 for consistency)",
+      "instruction": "Uso real da aplicacao com bullets tecnicos ou diferenciais.",
+      "notes": "This is the original 'second application' slot from the source sheet -- WITH bullet chips overlaid (unlike Aplicacao A)."
+    },
+    {
+      "n": 13,
+      "name": "Aplicacao C",
+      "format": "2000x2000 - JPG (assumed, for consistency)",
+      "instruction": "Nao especificado na planilha original -- terceira aplicacao real, um angulo/contexto de uso diferente das aplicacoes A e B.",
+      "notes": "Added 2026-07-27 for coverage. Real photo, different context/angle than assets 10 and 12 (e.g. different jobsite type, different way of holding/using the tool)."
+    },
+    {
+      "n": 14,
+      "name": "Aplicacao D",
+      "format": "2000x2000 - JPG (assumed, for consistency)",
+      "instruction": "Nao especificado na planilha original -- quarta aplicacao real, com bullets tecnicos ou diferenciais (como a Aplicacao B).",
+      "notes": "Added 2026-07-27 for coverage. WITH bullet chips overlaid, same pattern as Aplicacao B but a different real photo/context."
+    }
   ],
   "enriched_pages": [
-    {"n": 15, "name": "Pagina enriquecida 1", "notes": "Not specified in source sheet. DWST60436 pattern: reuse the Hero Shot photo + a 3-bullet recap of the top value props. Wide module, 2000x1047 (1200:628 ratio)."},
-    {"n": 16, "name": "Pagina enriquecida 2", "notes": "Reuse one of the Aplicacao photos (assets 10/12/13/14) + use-case bullets."},
-    {"n": 17, "name": "Pagina enriquecida 3", "notes": "Reuse the Diferenciais tecnicos photo (asset 3) + expanded technical bullets."},
-    {"n": 18, "name": "Pagina enriquecida 4", "notes": "Reuse the Familia asset (asset 4) + warranty/compatibility bullets."}
+    {
+      "n": 15,
+      "name": "Pagina enriquecida 1",
+      "notes": "Not specified in source sheet. DWST60436 pattern: reuse the Hero Shot photo + a 3-bullet recap of the top value props. Wide module, 2000x1047 (1200:628 ratio)."
+    },
+    {
+      "n": 16,
+      "name": "Pagina enriquecida 2",
+      "notes": "Reuse one of the Aplicacao photos (assets 10/12/13/14) + use-case bullets."
+    },
+    {
+      "n": 17,
+      "name": "Pagina enriquecida 3",
+      "notes": "Reuse the Diferenciais tecnicos photo (asset 3) + expanded technical bullets."
+    },
+    {
+      "n": 18,
+      "name": "Pagina enriquecida 4",
+      "notes": "Reuse the Familia asset (asset 4) + warranty/compatibility bullets."
+    }
   ],
   "brand_system_rules": {
-    "colors": {"yellow": "#FEBD17", "black": "#231E20", "offwhite": "#FCF5DE"},
-    "fonts": {"headline": "Archivo Expanded Black (uppercase, two-tone: first line white, second/emphasis line yellow)", "body": "Work Sans"},
+    "colors": {
+      "yellow": "#FEBD17",
+      "black": "#231E20",
+      "offwhite": "#FCF5DE"
+    },
+    "fonts": {
+      "headline": "Archivo Expanded Black (uppercase, two-tone: first line white, second/emphasis line yellow)",
+      "body": "Work Sans"
+    },
     "layout": "Thin yellow LINES (not thick bars) frame every tile, top+bottom; headline sits bottom-left or top-left inside the black/photo field; the DEWALT wordmark is a small standalone badge below the top line, not embedded in it. See tile_kit.py for exact component functions -- this is already baked into BASE_CSS, no per-asset adjustment needed.",
-    "source": "DW_Global-Brand-Equity-ToolKit-EN-v2_DBG1.pdf (DEWALT global brand toolkit) -- already extracted into tile_kit.py's BASE_CSS, do not need to re-read the original PDF.",
-    "inspiration_images": "generator/inspiration/*.jpg -- fixed, generic style references (see tile_kit.py's INSPIRATION_MAP), NOT per-SKU content. Pass the matching key to spec_row(..., inspiration=KEY) for every core asset (all 14 have one)."
+    "source": "DW_Global-Brand-Equity-ToolKit-EN-v2_DBG1.pdf (DEWALT global brand toolkit) -- already extracted into tile_kit.py's BASE_CSS, do not need to re-read the original PDF."
   }
 }
