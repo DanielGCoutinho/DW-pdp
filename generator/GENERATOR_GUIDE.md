@@ -136,11 +136,10 @@ fotos baixadas, e o ambiente pode nao ter a biblioteca pre-instalada.
    Supabase forca qualquer HTML publico a ser servido como `text/plain` (bloqueio
    de seguranca da propria plataforma contra hospedagem de XSS/phishing em
    buckets publicos -- nao da pra contornar so com headers no upload). O site
-   tem uma Netlify EDGE Function (`netlify/edge-functions/page.js`, roteada
-   via `netlify.toml`) que busca o arquivo no Storage e o resserve com o
-   content-type correto, **fazendo streaming** (sem limite de 6MB como uma
-   function classica/Lambda teria -- importante porque paginas com 18 assets
-   + imagens de inspiracao ja passam bem de 6MB). Use essa URL:
+   tem uma Netlify Function (`netlify/functions/page.js` + redirect em
+   `netlify.toml`) que busca o arquivo no Storage e o reserve com o
+   content-type correto. Use **essa** URL, no mesmo formato do
+   `pages/dwst60436.html` original:
    `result_url = /pages/<sku em minusculo>.html`
    (URL relativa ao site, nao a URL completa do Supabase.)
 
