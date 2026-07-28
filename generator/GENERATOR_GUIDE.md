@@ -13,9 +13,15 @@ outros arquivos deste repositório.
   não recrie o CSS/HTML do zero.
 - `generator/pdp_asset_spec.json` -- a lista padrão de **14 assets
   principais + 4 páginas enriquecidas** (18 no total) que toda página deve
-  ter (nomes, formato, instrução original da planilha-fonte). Use isso para
-  saber o que gerar -- os números dos assets abaixo neste guia (ex.: "asset
-  08") seguem essa numeração.
+  ter (nomes, formato, instrução original da planilha-fonte, e a chave de
+  `inspiration` de cada um). Use isso para saber o que gerar -- os números
+  dos assets abaixo neste guia (ex.: "asset 08") seguem essa numeração.
+- `generator/inspiration/*.jpg` -- referências reais de estilo (a maioria
+  anúncios/materiais oficiais DEWALT), uma por tipo de asset. Fixas e
+  genéricas, **não são pesquisadas por SKU** -- veja `tile_kit.INSPIRATION_MAP`
+  para a chave certa de cada asset (já mapeada em `pdp_asset_spec.json`).
+  Passe a chave pra `spec_row(..., inspiration=CHAVE)` -- todo asset
+  principal (1 a 14) deve receber uma.
 - Alguma página já publicada em `site/pages/` (se houver) ou no bucket do
   Supabase Storage serve de referência de qualidade/estilo -- confira o
   Supabase (`result_url` de um pedido `done`) se tiver dúvida de como um
@@ -65,6 +71,10 @@ fotos baixadas, e o ambiente pode nao ter a biblioteca pre-instalada.
    `pdp_asset_spec.json`, usando as funções de `tile_kit.py`
    (`tile`, `wide_tile`, `bar`, `headline`, `chip_list`, `badge_stack`,
    `compare_table`, `spec_row`, `badge`, etc). Para cada asset:
+   - **Sempre passe `inspiration=<chave>` pro `spec_row`** usando a chave
+     indicada em `pdp_asset_spec.json` pra aquele asset (vem de
+     `tile_kit.INSPIRATION_MAP`). Isso mostra a referência real de estilo ao
+     lado da imagem-base/sugerida -- não pule esse parâmetro.
    - Escreva um briefing técnico e um de marketing **específicos** dessa
      peça e desse SKU -- nunca um texto genérico que serviria pra qualquer
      produto. Se não souber o que dizer de específico, é sinal de que não
@@ -130,7 +140,7 @@ fotos baixadas, e o ambiente pode nao ter a biblioteca pre-instalada.
    via `netlify.toml`) que busca o arquivo no Storage e o resserve com o
    content-type correto, **fazendo streaming** (sem limite de 6MB como uma
    function classica/Lambda teria -- importante porque paginas com 18 assets
-   e fotos reais em alta resolucao podem passar de 6MB). Use essa URL:
+   + imagens de inspiracao ja passam bem de 6MB). Use essa URL:
    `result_url = /pages/<sku em minusculo>.html`
    (URL relativa ao site, nao a URL completa do Supabase.)
 
